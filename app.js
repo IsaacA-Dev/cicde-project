@@ -1,10 +1,10 @@
 const express = require('express');
+const path = require('path');
 const app = express();
 const PORT = 3000;
 
-app.get('/', (req, res) => {
-    res.send('<h1>¡Hola desde mi aplicación CI/CD!</h1><p>Build exitoso con Jenkins</p>');
-});
+// Servir archivos estáticos desde la carpeta 'public'
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/health', (req, res) => {
     res.status(200).send('OK');
