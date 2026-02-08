@@ -41,8 +41,13 @@ pipeline {
             steps {
                 script {
                     echo 'Deploying to Kubernetes...'
-                    sh 'kubectl apply -f kubernetes-deployment.yaml'
-                    sh 'kubectl rollout status deployment/mi-app-deployment'
+                    // Actualizar la imagen en el deployment
+                    sh """
+                        sed -i 's|image: .*|image: ${DOCKER_IMAGE}:${IMAGE_TAG}|g' kubernetes-deployment.yaml
+                        kubectl apply -f kubernetes-deployment.yaml --validate=false
+                        kubectl set image deployment/mi-app-deployment mi-app=${DOCKER_IMAGE}:${IMAGE_TAG}
+                        kubectl rollout status deployment/mi-app-deployment --timeout=2m
+                    """
                 }
             }
         }
@@ -62,6 +67,7 @@ pipeline {
     post {
         success {
             echo '¡Pipeline ejecutado exitosamente!'
+            echo 'Accede a tu aplicación con: minikube service mi-app-service --url'
         }
         failure {
             echo 'Pipeline falló. Revisar logs.'
